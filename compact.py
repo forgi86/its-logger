@@ -55,8 +55,8 @@ def main():
     for entry in os.listdir(DATA_PATH):
         if entry.startswith("DATE="):
             folder_date = date.fromisoformat(entry.split("=")[1])
-            #if folder_date < today:
-            compact_day(entry)
+            if folder_date < today:
+                compact_day(entry)
 
 if __name__ == "__main__":
     main()
