@@ -27,6 +27,13 @@ last_status = {}
 # HTTP session for efficiency
 session = requests.Session()
 
+schema = pa.schema([
+    ("STATION_ID", pa.string()),
+    ("STATUS", pa.string()),
+    ("TIME", pa.timestamp("s", tz="Europe/Zurich")),
+    ("DATE", pa.date32())
+])
+
 while True:
     try:
         # Fetch dynamic status data
@@ -35,7 +42,7 @@ while True:
         dynamic_data = response.json()
 
         # Timezone-aware timestamp (Europe/Zurich)
-        timestamp = datetime.now(pytz.timezone("Europe/Zurich"))
+        timestamp = pd.Timestamp.now(tz="Europe/Zurich").floor("s")
         print("Data fetched at:", timestamp.isoformat())
 
         # ---------------------------------------------------------
@@ -65,10 +72,10 @@ while True:
             df = pd.DataFrame(rows)
 
             df["STATUS"] = df["STATUS"].astype("category")
-            df["TIME"] = pd.to_datetime(df["TIME"]).dt.floor("s")
-            df["DATE"] = df["TIME"].dt.date  # real date32 type
+            df["TIME"] = timestamp
+            df["DATE"] = df["TIME"].dt.date
 
-            table = pa.Table.from_pandas(df)
+            table = pa.Table.from_pandas(df, schema=schema, preserve_index=False)
 
             pq.write_to_dataset(
                 table,
