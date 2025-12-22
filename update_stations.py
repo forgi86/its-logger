@@ -16,7 +16,7 @@ logging.basicConfig(
 # Configuration
 STATIC_DATA_URL = "https://data.geo.admin.ch/ch.bfe.ladestellen-elektromobilitaet/data/ch.bfe.ladestellen-elektromobilitaet.json"
 DATA_FOLDER = "data"
-STATIC_FOLDER = "stations"
+STATIONS_FOLDER = "stations"
 UPDATE_INTERVAL = 24 * 60 * 60  # 24 hours in seconds
 
 
@@ -24,8 +24,8 @@ def update_stations():
     """Fetch and save station data."""
     try:
         # Create directory structure
-        static_path = Path(DATA_FOLDER) / STATIC_FOLDER
-        static_path.mkdir(parents=True, exist_ok=True)
+        stations_path = Path(DATA_FOLDER) / STATIONS_FOLDER
+        stations_path.mkdir(parents=True, exist_ok=True)
         
         # Fetch data
         logging.info("Fetching station data...")
@@ -37,7 +37,7 @@ def update_stations():
         
         # Save compressed JSON file
         time_str = timestamp.strftime("%Y%m%d%H%M%S")
-        filename = static_path / f"stations_{time_str}.json.gz"
+        filename = stations_path / f"stations_{time_str}.json.gz"
         
         with gzip.open(filename, "wt", encoding="utf-8") as f:
             f.write(response.text)
