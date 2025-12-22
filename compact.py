@@ -7,7 +7,6 @@ from pathlib import Path
 
 DATA_FOLDER = "data"
 CHARGE_FOLDER = "charge"
-BASE_SLEEP = 10
 DATA_PATH = Path(DATA_FOLDER) / CHARGE_FOLDER
 DATA_PATH.mkdir(parents=True, exist_ok=True)
 
