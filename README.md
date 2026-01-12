@@ -1,10 +1,14 @@
 # Swiss EV Charging Stations Data Logger
 
-Monitor Swiss EV charging infrastructure using open data from the Swiss Federal Office of Energy. The collectors here ingest dynamic status updates every ~30 seconds and daily snapshots of station metadata, store them locally, and provide notebooks for exploration.
+A data logger for the Swiss EV charging infrastructure using open data from the [Swiss Federal Office of Energy (SFOE)](https://www.bfe.admin.ch/bfe/en/home.html). The API is described [here](https://github.com/SFOE/ichtankestrom_Documentation/), an real-time visualization of the data is available [here](https://www.bfe.admin.ch/bfe/en/home.html).
+
+The logger provided in this repo retrieves dynamic status updates from the API every ~30 seconds and daily snapshots of station metadata. We also provide notebooks for exploration.
 
 ## Data sources
 - Static inventory: https://data.geo.admin.ch/ch.bfe.ladestellen-elektromobilitaet/data/ch.bfe.ladestellen-elektromobilitaet.json
 - Dynamic status: https://data.geo.admin.ch/ch.bfe.ladestellen-elektromobilitaet/status/ch.bfe.ladestellen-elektromobilitaet.json
+
+
 
 ## Components
 - `update_charge.py`: polls dynamic EVSE statuses every 30s (with ±2s jitter), records only changes, and writes a partitioned Parquet dataset under `data/charge/DATE=YYYY-MM-DD/` (columns: `STATION_ID`, `STATUS`, `TIME`, `DATE`; timezone Europe/Zurich; ZSTD compression).
@@ -22,4 +26,4 @@ Monitor Swiss EV charging infrastructure using open data from the Swiss Federal 
 ```bash
 python -m venv .venv
 source .venv/bin/activate
-pip install -r 
+pip install -r requirements.txt
