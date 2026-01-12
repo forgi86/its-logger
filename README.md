@@ -13,7 +13,7 @@ The logger provided in this repo retrieves dynamic status updates from the API e
 ## Components
 - `update_charge.py`: polls dynamic EVSE statuses every 30s (with ±2s jitter), records only changes, and writes a partitioned Parquet dataset under `data/charge/DATE=YYYY-MM-DD/` (columns: `STATION_ID`, `STATUS`, `TIME`, `DATE`; timezone Europe/Zurich; ZSTD compression).
 - `update_stations.py`: fetches the full static station inventory once per day and saves `data/stations/stations_YYYYMMDDHHMMSS.json.gz`.
-- `compact.py`: merges previous-day Parquet shards into `merged.parquet` and removes the individual files; safe to schedule just after midnight.
+- `compact.py`: merges previous-day Parquet shards into `merged.parquet` and removes the individual files.
 - Notebooks (`analyze.ipynb`, `occupancy.ipynb`, `preproc.ipynb`, plus `tmp/*.ipynb`) for exploratory analysis and plotting.
 
 ## Data layout
