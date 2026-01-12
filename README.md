@@ -1,4 +1,4 @@
-# Swiss EV Charging Station Status
+# Swiss EV Charging Stations Data Logger
 
 Monitor Swiss EV charging infrastructure using open data from the Swiss Federal Office of Energy. The collectors here ingest dynamic status updates every ~30 seconds and daily snapshots of station metadata, store them locally, and provide notebooks for exploration.
 
