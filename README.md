@@ -1,4 +1,4 @@
-# Swiss EV Charging Station Status
+# Swiss EV Charging Stations Data Logger
 
 Monitor the Swiss EV charging infrastructure using open data from the Swiss Federal Office of Energy. The collectors here ingest dynamic status updates every ~30 seconds and daily snapshots of station metadata, store them locally, and provide notebooks for exploration.
 
@@ -10,7 +10,7 @@ Monitor the Swiss EV charging infrastructure using open data from the Swiss Fede
 ## Components
 - `update_charge.py`: polls dynamic EVSE statuses every 30s (with ±2s jitter), records only changes, and writes a partitioned Parquet dataset under `data/charge/DATE=YYYY-MM-DD/` (columns: `STATION_ID`, `STATUS`, `TIME`, `DATE`; timezone Europe/Zurich; ZSTD compression).
 - `update_stations.py`: fetches the full static station inventory once per day and saves `data/stations/stations_YYYYMMDDHHMMSS.json.gz`.
-- `compact.py`: merges previous-day Parquet shards into `merged.parquet` and removes the individual files; safe to schedule just after midnight.
+- `compact.py`: merges previous-day Parquet shards into `merged.parquet` and removes the individual files.
 - Notebooks (`analyze.ipynb`, `occupancy.ipynb`, `preproc.ipynb`, plus `tmp/*.ipynb`) for exploratory analysis and plotting.
 
 ## Data layout
@@ -25,4 +25,4 @@ A sample dataset collected with the logger is available [here](https://github.co
 ```bash
 python -m venv .venv
 source .venv/bin/activate
-pip install -r 
+pip install -r requirements.txt
