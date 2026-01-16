@@ -2,15 +2,18 @@ FROM pytorch/pytorch
 
 ENV PIP_ROOT_USER_ACTION=ignore
 
-# Install system packages 
-RUN apt-get update && apt-get install -yq wget vim git unzip
+# Install system packages
+RUN apt-get update && apt-get install -yq \
+    git \
+    vim \
+    wget \
+    unzip \
+    tmux \
+    && rm -rf /var/lib/apt/lists/*
 
-RUN apt-get update && apt-get install -yq wget tmux
+# Create a non-root user without fixed UID/GID
+ARG USERNAME=vscode
+RUN useradd -m -s /bin/bash ${USERNAME}
 
-ARG user=mforgione
-ARG group=mforgione
-ARG uid=1006
-ARG gid=1006
-RUN groupadd -g ${gid} ${group}
-RUN useradd -u ${uid} -g ${gid} -s /bin/bash -m ${user}
-USER ${uid}:${gid}
+USER ${USERNAME}
+WORKDIR /home/${USERNAME}
