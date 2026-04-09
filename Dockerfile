@@ -11,9 +11,15 @@ RUN apt-get update && apt-get install -yq \
     tmux \
     && rm -rf /var/lib/apt/lists/*
 
-# Create a non-root user without fixed UID/GID
-ARG USERNAME=vscode
-RUN useradd -m -s /bin/bash ${USERNAME}
+ARG uid
+ARG gid
+ARG user
+ARG group
 
-USER ${USERNAME}
-WORKDIR /home/${USERNAME}
+RUN groupadd -g ${gid} ${group} && \
+    useradd -u ${uid} -g ${gid} -s /bin/bash -m ${user}
+
+# Create a non-root user without fixed UID/GID
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt --break-system-packages
+USER ${uid}:${gid}

@@ -1,0 +1,1 @@
+docker exec -it logger-runner /bin/bash
