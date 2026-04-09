@@ -16,6 +16,7 @@ dynamic_data_url = "https://data.geo.admin.ch/ch.bfe.ladestellen-elektromobilita
 DATA_FOLDER = "data"
 CHARGE_FOLDER = "charge"
 BASE_SLEEP = 30
+JITTER = False
 
 
 charge_path = Path(DATA_FOLDER) / CHARGE_FOLDER
@@ -91,5 +92,5 @@ while True:
     # 3. Sleep with jitter to avoid synchronized polling
     # ---------------------------------------------------------
 
-    jitter = random.uniform(-2, 2)  # +/- 2 seconds
+    jitter = random.uniform(-2, 2) if JITTER else 0 # +/- 2 seconds
     time.sleep(max(1, BASE_SLEEP + jitter))
