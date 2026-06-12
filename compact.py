@@ -32,7 +32,7 @@ def compact_day(date_folder: str):
                 SELECT 
                     CAST(STATION_ID AS VARCHAR) AS STATION_ID,
                     CAST(STATUS AS VARCHAR) AS STATUS,
-                    CAST(TIME AS TIMESTAMP) AS TIME,
+                    CAST(TIME AS TIMESTAMP) AS TIME
                 FROM parquet_scan('{folder_path}/*.parquet')
                 WHERE filename != '{output_file}'
                 ORDER BY TIME, STATION_ID

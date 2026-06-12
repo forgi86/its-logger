@@ -1,6 +1,5 @@
 import requests
 from datetime import datetime
-import pytz
 from pathlib import Path
 import time
 import random
@@ -24,6 +23,7 @@ charge_path.mkdir(parents=True, exist_ok=True)
 
 # Persistent dictionary across runs
 last_status = {}
+current_date = None
 
 # HTTP session for efficiency
 session = requests.Session()
@@ -46,8 +46,12 @@ while True:
         timestamp = pd.Timestamp.now(tz="Europe/Zurich").floor("s")
         print("Data fetched at:", timestamp.isoformat())
 
+        today = timestamp.date()
+        force_snapshot = current_date is None or today != current_date
+
         # ---------------------------------------------------------
-        # 1. Extract only changed statuses
+        # 1. Extract changed statuses (or every status on the first
+        #    poll of the day / after a restart, as a full snapshot)
         # ---------------------------------------------------------
         rows = []
 
@@ -56,7 +60,7 @@ while True:
                 sid = record["EvseID"]
                 status = record["EVSEStatus"]
 
-                if last_status.get(sid) != status:
+                if force_snapshot or last_status.get(sid) != status:
                     rows.append({
                         "STATION_ID": sid,
                         "STATUS": status,
@@ -64,7 +68,9 @@ while True:
                     })
                     last_status[sid] = status
 
-        print(len(rows), "status changes detected.")
+        current_date = today
+
+        print(len(rows), "status changes detected." if not force_snapshot else "rows written (full snapshot).")
 
         # ---------------------------------------------------------
         # 2. Write only if something changed
