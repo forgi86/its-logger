@@ -21,6 +21,10 @@ Monitor the Swiss EV charging infrastructure using open data from the Swiss Fede
 
 A sample dataset collected with the logger is available [here](https://github.com/forgi86/its-logger/releases/download/v0.1/data.zip).
 
+## Data visualization
+Total occupancy over ~10 days of data collected with the logger. Figure generated with `occupancy.ipynb`: 
+[![Occupancy](fig/occupancy.png)](fig/occupancy.png)
+
 ## Setup
 ```bash
 python -m venv .venv
