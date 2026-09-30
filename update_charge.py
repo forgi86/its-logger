@@ -50,30 +50,68 @@ while True:
         force_snapshot = current_date is None or today != current_date
 
         # ---------------------------------------------------------
-        # 1. Extract changed statuses (or every status on the first
+        # 1. Collapse to one status per EVSE. The feed lists a few
+        #    EvseIDs under more than one operator (e.g. swisscharge
+        #    re-listing third-party points), often with conflicting
+        #    statuses. Prefer the owner's copy (EvseID starts with its
+        #    OperatorID), then a known status over "Unknown".
+        # ---------------------------------------------------------
+        current_status = {}  # sid -> (status, is_owner)
+        listings = {}  # sid -> statuses from every operator listing it
+
+        for operator in dynamic_data["EVSEStatuses"]:
+            operator_id = operator.get("OperatorID") or ""
+            for record in operator["EVSEStatusRecord"]:
+                sid = record["EvseID"]
+                status = record["EVSEStatus"]
+                is_owner = bool(operator_id) and sid.startswith(operator_id)
+                listings.setdefault(sid, []).append(status)
+
+                prev = current_status.get(sid)
+                if prev is None or (is_owner, status != "Unknown") > (prev[1], prev[0] != "Unknown"):
+                    current_status[sid] = (status, is_owner)
+
+        # Normally ~5; a jump signals a feed incident (e.g. March 2026: 4,163)
+        n_dup = sum(len(s) > 1 for s in listings.values())
+        n_conflict = sum(len(set(s)) > 1 for s in listings.values())
+        print(n_dup, "EvseIDs listed more than once,", n_conflict, "with conflicting statuses.")
+
+        # ---------------------------------------------------------
+        # 2. Extract changed statuses (or every status on the first
         #    poll of the day / after a restart, as a full snapshot)
         # ---------------------------------------------------------
         rows = []
 
-        for operator in dynamic_data["EVSEStatuses"]:
-            for record in operator["EVSEStatusRecord"]:
-                sid = record["EvseID"]
-                status = record["EVSEStatus"]
+        for sid, (status, _) in current_status.items():
+            if force_snapshot or last_status.get(sid) != status:
+                rows.append({
+                    "STATION_ID": sid,
+                    "STATUS": status,
+                    "TIME": timestamp
+                })
+                last_status[sid] = status
 
-                if force_snapshot or last_status.get(sid) != status:
-                    rows.append({
-                        "STATION_ID": sid,
-                        "STATUS": status,
-                        "TIME": timestamp
-                    })
-                    last_status[sid] = status
+        # EVSEs seen before but absent from this poll: record them as
+        # "Missing" once, so readers don't keep their last status forever.
+        # Forgetting them makes a reappearance count as a change.
+        # The feed should always be complete, so this is itself worth logging.
+        missing = [sid for sid in last_status if sid not in current_status]
+        for sid in missing:
+            rows.append({
+                "STATION_ID": sid,
+                "STATUS": "Missing",
+                "TIME": timestamp
+            })
+            del last_status[sid]
+        if missing:
+            print(len(missing), "EvseIDs dropped out of the feed (marked Missing):", ", ".join(missing[:5]) + (" ..." if len(missing) > 5 else ""))
 
         current_date = today
 
         print(len(rows), "status changes detected." if not force_snapshot else "rows written (full snapshot).")
 
         # ---------------------------------------------------------
-        # 2. Write only if something changed
+        # 3. Write only if something changed
         # ---------------------------------------------------------
         if rows:
             df = pd.DataFrame(rows)
@@ -95,7 +133,7 @@ while True:
         print(f"[{datetime.now().isoformat()}] Error during update:", e)
         
     # ---------------------------------------------------------
-    # 3. Sleep with jitter to avoid synchronized polling
+    # 4. Sleep with jitter to avoid synchronized polling
     # ---------------------------------------------------------
 
     jitter = random.uniform(-2, 2) if JITTER else 0 # +/- 2 seconds
